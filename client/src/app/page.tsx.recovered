@@ -1,0 +1,416 @@
+"use client";
+import { useEffect, useRef, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
+
+const ALL_ISOS = ["ad","ae","af","ag","al","am","ao","ar","at","au","az","ba","bb","bd","be","bf","bg","bh","bi","bj","bn","bo","br","bs","bt","bw","by","bz","ca","cd","cf","cg","ch","ci","cl","cm","cn","co","cr","cu","cv","cy","cz","de","dj","dk","dm","do","dz","ec","ee","eg","er","es","et","fi","fj","fm","fr","ga","gb","gd","ge","gh","gm","gn","gq","gr","gt","gw","gy","hn","hr","ht","hu","id","ie","il","in","iq","ir","is","it","jm","jo","jp","ke","kg","kh","ki","km","kn","kp","kr","kw","kz","la","lb","lc","li","lk","lr","ls","lt","lu","lv","ly","ma","mc","md","me","mg","mh","mk","ml","mm","mn","mr","mt","mu","mv","mw","mx","my","mz","na","ne","ng","ni","nl","no","np","nr","nz","om","pa","pe","pg","ph","pk","pl","pt","pw","py","qa","ro","rs","ru","rw","sa","sb","sc","sd","se","sg","si","sk","sl","sm","sn","so","sr","ss","st","sv","sy","sz","td","tg","th","tj","tl","tm","tn","to","tr","tt","tv","tw","tz","ua","ug","us","uy","uz","vc","ve","vn","vu","ws","ye","za","zm","zw","hk","mo","pr","ps","aq","as","aw","ax","bl","bm","bq","bv","cc","ck","cw","cx","fk","fo","gf","gg","gi","gl","gp","gs","gu","hm","im","io","je","ky","mf","mp","mq","ms","nc","nf","nu","pf","pm","pn","re","sh","sj","tc","tf","tk","um","vg","vi","wf","yt","xk","va","eh","sx","ac"];
+
+// Simple ASMR Sound Synthesizer using Web Audio API
+class AudioSystem {
+    ctx: AudioContext | null = null;
+    masterCompressor: DynamicsCompressorNode | null = null;
+    
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            this.masterCompressor = this.ctx.createDynamicsCompressor();
+            
+            // Compressor settings for punchy but safe sound
+            this.masterCompressor.threshold.setValueAtTime(-10, this.ctx.currentTime);
+            this.masterCompressor.knee.setValueAtTime(40, this.ctx.currentTime);
+            this.masterCompressor.ratio.setValueAtTime(12, this.ctx.currentTime);
+            this.masterCompressor.attack.setValueAtTime(0, this.ctx.currentTime);
+            this.masterCompressor.release.setValueAtTime(0.25, this.ctx.currentTime);
+            
+            this.masterCompressor.connect(this.ctx.destination);
+        }
+    }
+
+    playPop() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterCompressor!);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600 + Math.random() * 400, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.05);
+        
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+    }
+
+    bounceTimestamps: number[] = [];
+
+    playBounce(impact: number) {
+        if (!this.ctx) return;
+        
+        // Global Throttling: Prevent more than 2 bounce sounds within 50ms to avoid distortion/noise
+        const now = Date.now();
+        this.bounceTimestamps = this.bounceTimestamps.filter(t => now - t < 50);
+        if (this.bounceTimestamps.length >= 2) return;
+        this.bounceTimestamps.push(now);
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterCompressor!);
+        
+        // Tactile satisfying "Tock/Thud"
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.05);
+        
+        let vol = Math.min(1.0, impact / 200); 
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+    }
+
+    killTimestamps: number[] = [];
+
+    playKill() {
+        if (!this.ctx) return;
+        
+        // Global Throttling for kill sounds
+        const now = Date.now();
+        this.killTimestamps = this.killTimestamps.filter(t => now - t < 200);
+        if (this.killTimestamps.length >= 1) return; // Max 1 kill sound per 200ms
+        this.killTimestamps.push(now);
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterCompressor!);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.4);
+        
+        gain.gain.setValueAtTime(1.0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.4);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.4);
+    }
+
+    playShatter() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterCompressor!);
+        
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.5);
+        
+        gain.gain.setValueAtTime(1.0, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.5);
+    }
+
+    playVictory() {
+        if (!this.ctx) return;
+        const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5 (Major arpeggio)
+        notes.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.masterCompressor!);
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.15);
+            
+            gain.gain.setValueAtTime(0, this.ctx.currentTime + i * 0.15);
+            gain.gain.linearRampToValueAtTime(0.5, this.ctx.currentTime + i * 0.15 + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.15 + 1.0);
+            
+            osc.start(this.ctx.currentTime + i * 0.15);
+            osc.stop(this.ctx.currentTime + i * 0.15 + 1.0);
+        });
+    }
+}
+
+const audio = new AudioSystem();
+
+export default function Home() {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [gameState, setGameState] = useState<any>(null);
+    const flagsCache = useRef<Record<string, HTMLCanvasElement>>({});
+    const visualStates = useRef<Record<string, { wobbleStart: number, wobbleAmp: number }>>({});
+    const socketRef = useRef<Socket | null>(null);
+    const [matchWinner, setMatchWinner] = useState<{name: string, iso: string} | null>(null);
+    const confettiRef = useRef<any[]>([]);
+
+    useEffect(() => {
+        const initAudio = () => { audio.init(); window.removeEventListener('click', initAudio); };
+        window.addEventListener('click', initAudio);
+
+        ALL_ISOS.forEach(iso => {
+            if (!flagsCache.current[iso]) {
+                const img = new Image();
+                img.src = `https://flagcdn.com/w320/${iso}.png`;
+                img.onload = () => {
+                    const offscreen = document.createElement('canvas');
+                    offscreen.width = 320;
+                    offscreen.height = 320;
+                    const octx = offscreen.getContext('2d');
+                    if (octx) {
+                        octx.beginPath();
+                        octx.arc(160, 160, 160, 0, Math.PI * 2);
+                        octx.clip();
+                        octx.drawImage(img, 0, 0, 320, 320);
+                    }
+                    flagsCache.current[iso] = offscreen;
+                };
+            }
+        });
+
+        const socket = io('http://localhost:3002');
+        socketRef.current = socket;
+
+        socket.on('match-winner', (winner) => {
+            setMatchWinner(winner);
+            audio.playVictory();
+            
+            // Generate confetti
+            const newConfetti = Array.from({length: 150}).map(() => ({
+                x: Math.random() * 1080,
+                y: -50 - Math.random() * 500, // starts above screen
+                vx: (Math.random() - 0.5) * 15,
+                vy: 5 + Math.random() * 15,
+                color: ['#ffaa00', '#ff003c', '#00f2fe', '#00ffcc', '#ffffff'][Math.floor(Math.random() * 5)],
+                size: 10 + Math.random() * 15,
+                rot: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.2
+            }));
+            confettiRef.current = newConfetti;
+
+            setTimeout(() => {
+                setMatchWinner(null);
+            }, 4500);
+        });
+
+        socket.on('state', (state) => {
+            setGameState(state);
+            
+            state.events?.forEach((evt: any) => {
+                if (evt.type === 'pop') audio.playPop();
+                if (evt.type === 'bounce') { 
+                    audio.playBounce(evt.impact || 100); 
+                    if (evt.id) visualStates.current[evt.id] = { wobbleStart: Date.now(), wobbleAmp: 0.15 }; 
+                }
+                if (evt.type === 'kill') { 
+                    audio.playKill();
+                    if (evt.id) visualStates.current[evt.id] = { wobbleStart: Date.now(), wobbleAmp: 0.3 };
+                }
+                if (evt.type === 'shatter') {
+                    audio.playShatter();
+                }
+            });
+
+            requestAnimationFrame(() => renderCanvas(state));
+        });
+
+        return () => socket.disconnect();
+    }, []);
+
+    const renderCanvas = (state: any) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (state.phase === 5) {
+            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffaa00';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 80px sans-serif';
+            ctx.fillText(`${state.winner?.name || 'UNKNOWN'} WINS!`, canvas.width/2, canvas.height/2);
+            return;
+        }
+
+        if (state.bounds) {
+            ctx.strokeStyle = state.timer > 60 ? '#ff003c' : '#00ffcc';
+            ctx.lineWidth = state.timer > 60 ? 15 : 5;
+            ctx.shadowBlur = 20; 
+            ctx.shadowColor = ctx.strokeStyle;
+            ctx.strokeRect(state.bounds.xMin, state.bounds.yMin, state.bounds.xMax - state.bounds.xMin, state.bounds.yMax - state.bounds.yMin);
+            ctx.shadowBlur = 0; 
+        }
+
+        ctx.fillStyle = '#00ff00';
+        state.spikes?.forEach((s: any) => {
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        ctx.fillStyle = '#00f2fe';
+        state.stardust?.forEach((sd: any) => {
+            ctx.beginPath();
+            ctx.arc(sd.x, sd.y, sd.radius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        const sortedCountries = [...(state.countries || [])].sort((a,b) => a.radius - b.radius);
+        const now = Date.now();
+
+        sortedCountries.forEach((c: any) => {
+            ctx.save();
+            ctx.translate(c.x, c.y);
+
+            let speed = Math.hypot(c.vx || 0, c.vy || 0);
+            let angle = Math.atan2(c.vy || 0, c.vx || 0);
+            let stretch = 1.0 + Math.min(0.3, speed / 1000); 
+            let squash = 1.0 / stretch; 
+
+            let wobble = 0;
+            let vState = visualStates.current[c.id];
+            if (vState) {
+                let t = (now - vState.wobbleStart) / 1000; 
+                if (t < 1.0) { 
+                    let A = vState.wobbleAmp;
+                    let omega = 20; 
+                    let lambda = 3; 
+                    wobble = A * Math.sin(omega * t) * Math.exp(-lambda * t);
+                }
+            }
+
+            ctx.rotate(angle);
+            ctx.scale(stretch + wobble, squash - wobble);
+            ctx.rotate(-angle);
+
+            if (state.isInvincible) {
+                ctx.beginPath();
+                ctx.arc(0, 0, c.radius + 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.fill();
+            }
+
+            const cachedCanvas = flagsCache.current[c.iso];
+            if (cachedCanvas) {
+                ctx.drawImage(cachedCanvas, -c.radius, -c.radius, c.radius * 2, c.radius * 2);
+            } else {
+                ctx.beginPath();
+                ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#444';
+                ctx.fill();
+            }
+
+            ctx.setTransform(1, 0, 0, 1, 0, 0); 
+
+            if (c.radius > 30 || state.totalAlive < 20) {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${Math.max(14, c.radius * 0.25)}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 3;
+                ctx.strokeText(c.name, c.x, c.y);
+                ctx.fillText(c.name, c.x, c.y);
+            }
+
+            ctx.restore();
+        });
+
+        // Render Confetti
+        if (confettiRef.current.length > 0) {
+            confettiRef.current.forEach(c => {
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.rotate(c.rot);
+                ctx.fillStyle = c.color;
+                ctx.fillRect(-c.size/2, -c.size/2, c.size, c.size * 0.5);
+                ctx.restore();
+
+                c.x += c.vx;
+                c.y += c.vy;
+                c.rot += c.rotSpeed;
+                c.vx *= 0.99; // Air resistance
+                c.vy += 0.2;  // Gravity
+            });
+            confettiRef.current = confettiRef.current.filter(c => c.y < canvas.height + 50);
+        }
+    };
+
+    const rawTimer = gameState?.timer || 0;
+    const mins = Math.floor(rawTimer / 60).toString().padStart(2, '0');
+    const secs = Math.floor(rawTimer % 60).toString().padStart(2, '0');
+
+    return (
+        <main className="w-full h-screen bg-black flex justify-center items-center overflow-hidden text-white font-sans">
+           <div className="relative w-[56.25vh] max-w-[100vw] h-[100vh] bg-[#0F0F1A] border-2 border-[#1a1a2e] flex flex-col">
+               
+               {/* 20% Top HUD */}
+                 <div className="h-[20%] w-full flex flex-col p-4 z-10 bg-gradient-to-b from-black/90 to-transparent absolute top-0 left-0">
+                    <div className="text-center font-bold text-xl text-[#00f2fe] tracking-wider mb-2" style={{ textShadow: '0 0 10px #00f2fe' }}>
+                        {gameState?.phaseName?.toUpperCase() || 'LOADING...'} | {mins}:{secs}
+                    </div>
+                    {/* Leaderboard temporarily hidden as requested */}
+               </div>
+               
+               {/* 65% Canvas */}
+               <div className="h-[65%] w-full relative mt-[20%]">
+                  <canvas ref={canvasRef} width={1080} height={1440} className="w-full h-full absolute inset-0 block" />
+                  
+                  {matchWinner && (<div className="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center animate-in fade-in duration-500"><h1 className="text-6xl font-bold text-[#ffaa00] mb-8 tracking-widest drop-shadow-[0_0_20px_rgba(255,170,0,0.8)] animate-bounce">VICTORY!</h1><div className="relative rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.5)] transform hover:scale-110 transition-transform animate-in slide-in-from-bottom-24 duration-700 flex justify-center items-center"><img src={`https://flagcdn.com/w320/${matchWinner.iso}.png`} className="max-h-48 max-w-[80vw] object-contain rounded-xl" /></div><h2 className="mt-8 text-5xl font-black text-white uppercase drop-shadow-md animate-pulse text-center px-4 leading-tight break-words max-w-[90vw]">{(() => { try { return new Intl.DisplayNames(["en"], { type: "region" }).of(matchWinner.iso.toUpperCase()); } catch(e) { return matchWinner.name; } })()}</h2></div>)}{gameState?.isPaused && !matchWinner && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
+                          <button 
+                              onClick={() => socketRef.current?.emit('toggle-play')}
+                              className="bg-red-600 hover:bg-red-500 text-white font-bold py-6 px-12 rounded-full text-4xl shadow-[0_0_30px_rgba(255,0,0,0.8)] transition-all hover:scale-110"
+                          >
+                              START GAME
+                          </button>
+                      </div>
+                  )}
+               </div>
+
+               {/* 15% Footer */}
+               <div className="h-[15%] w-full bg-black/95 border-t-2 border-[#ff003c] p-3 flex flex-col z-10 absolute bottom-0 left-0 shadow-[0_-5px_20px_rgba(255,0,60,0.3)]">
+                  <div className="flex justify-between items-center mb-2">
+                      <span className="font-bold text-[#ffaa00]">ALIVE: {gameState?.totalAlive || 0} / {gameState?.totalInitial || 0} FLAGS</span>
+                  </div>
+                  
+                  <div className="flex-1 overflow-hidden">
+                      <div className="grid grid-cols-16 gap-[2px] opacity-80" style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}>
+                          {ALL_ISOS.map(iso => {
+                              const isAlive = gameState?.countries?.some((c:any) => c.iso === iso);
+                              return (
+                                  <div key={iso} className="relative w-4 h-3">
+                                      <img 
+                                        src={`https://flagcdn.com/w20/${iso}.png`} 
+                                        alt={iso} 
+                                        className={`w-full h-full object-cover transition-all ${!isAlive ? 'grayscale opacity-30' : ''}`}
+                                      />
+                                      {!isAlive && <div className="absolute inset-0 flex items-center justify-center text-red-500 font-bold text-[10px]">X</div>}
+                                  </div>
+                              );
+                          })}
+                      </div>
+                  </div>
+
+                  <div className="text-center mt-2">
+                      <div className="inline-block bg-[#ff003c]/20 border border-[#ff003c] text-[#ff003c] px-4 py-1 rounded-full text-xs font-bold tracking-widest" style={{ textShadow: '0 0 5px #ff003c' }}>
+                          ★ @YourChannelName ★
+                      </div>
+                  </div>
+               </div>
+
+           </div>
+        </main>
+    );
+}
+
+

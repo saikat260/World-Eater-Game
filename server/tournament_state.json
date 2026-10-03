@@ -1,0 +1,282 @@
+{
+  "tournament_status": "in_progress",
+  "current_phase": "Phase 1: Chaos Qualifiers",
+  "current_match": 62,
+  "qualified_winners": {
+    "in": {
+      "name": "IN",
+      "iso": "in",
+      "wins": 1
+    },
+    "bg": {
+      "name": "BG",
+      "iso": "bg",
+      "wins": 1
+    },
+    "yt": {
+      "name": "YT",
+      "iso": "yt",
+      "wins": 1
+    },
+    "mp": {
+      "name": "MP",
+      "iso": "mp",
+      "wins": 1
+    },
+    "gy": {
+      "name": "GY",
+      "iso": "gy",
+      "wins": 1
+    },
+    "vn": {
+      "name": "VN",
+      "iso": "vn",
+      "wins": 1
+    },
+    "is": {
+      "name": "IS",
+      "iso": "is",
+      "wins": 1
+    },
+    "il": {
+      "name": "IL",
+      "iso": "il",
+      "wins": 2
+    },
+    "co": {
+      "name": "CO",
+      "iso": "co",
+      "wins": 1
+    },
+    "ua": {
+      "name": "UA",
+      "iso": "ua",
+      "wins": 1
+    },
+    "qa": {
+      "name": "QA",
+      "iso": "qa",
+      "wins": 1
+    },
+    "br": {
+      "name": "BR",
+      "iso": "br",
+      "wins": 1
+    },
+    "fo": {
+      "name": "FO",
+      "iso": "fo",
+      "wins": 1
+    },
+    "cm": {
+      "name": "CM",
+      "iso": "cm",
+      "wins": 1
+    },
+    "rs": {
+      "name": "RS",
+      "iso": "rs",
+      "wins": 1
+    },
+    "sn": {
+      "name": "SN",
+      "iso": "sn",
+      "wins": 1
+    },
+    "de": {
+      "name": "DE",
+      "iso": "de",
+      "wins": 1
+    },
+    "pr": {
+      "name": "PR",
+      "iso": "pr",
+      "wins": 1
+    },
+    "mw": {
+      "name": "MW",
+      "iso": "mw",
+      "wins": 1
+    },
+    "ad": {
+      "name": "AD",
+      "iso": "ad",
+      "wins": 1
+    },
+    "kr": {
+      "name": "KR",
+      "iso": "kr",
+      "wins": 2
+    },
+    "mz": {
+      "name": "MZ",
+      "iso": "mz",
+      "wins": 1
+    },
+    "hk": {
+      "name": "HK",
+      "iso": "hk",
+      "wins": 1
+    },
+    "bo": {
+      "name": "BO",
+      "iso": "bo",
+      "wins": 1
+    },
+    "ao": {
+      "name": "AO",
+      "iso": "ao",
+      "wins": 2
+    },
+    "dm": {
+      "name": "DM",
+      "iso": "dm",
+      "wins": 2
+    },
+    "sv": {
+      "name": "SV",
+      "iso": "sv",
+      "wins": 1
+    },
+    "ki": {
+      "name": "KI",
+      "iso": "ki",
+      "wins": 1
+    },
+    "bw": {
+      "name": "BW",
+      "iso": "bw",
+      "wins": 2
+    },
+    "bm": {
+      "name": "BM",
+      "iso": "bm",
+      "wins": 1
+    },
+    "gi": {
+      "name": "GI",
+      "iso": "gi",
+      "wins": 1
+    },
+    "fk": {
+      "name": "FK",
+      "iso": "fk",
+      "wins": 1
+    },
+    "so": {
+      "name": "SO",
+      "iso": "so",
+      "wins": 1
+    },
+    "me": {
+      "name": "ME",
+      "iso": "me",
+      "wins": 1
+    },
+    "gn": {
+      "name": "GN",
+      "iso": "gn",
+      "wins": 1
+    },
+    "ni": {
+      "name": "NI",
+      "iso": "ni",
+      "wins": 1
+    },
+    "mk": {
+      "name": "MK",
+      "iso": "mk",
+      "wins": 1
+    },
+    "gd": {
+      "name": "GD",
+      "iso": "gd",
+      "wins": 1
+    },
+    "tl": {
+      "name": "TL",
+      "iso": "tl",
+      "wins": 1
+    },
+    "et": {
+      "name": "ET",
+      "iso": "et",
+      "wins": 2
+    },
+    "np": {
+      "name": "NP",
+      "iso": "np",
+      "wins": 1
+    },
+    "fm": {
+      "name": "FM",
+      "iso": "fm",
+      "wins": 1
+    },
+    "kw": {
+      "name": "KW",
+      "iso": "kw",
+      "wins": 1
+    },
+    "bn": {
+      "name": "BN",
+      "iso": "bn",
+      "wins": 1
+    },
+    "gs": {
+      "name": "GS",
+      "iso": "gs",
+      "wins": 1
+    },
+    "ae": {
+      "name": "AE",
+      "iso": "ae",
+      "wins": 1
+    },
+    "ag": {
+      "name": "AG",
+      "iso": "ag",
+      "wins": 1
+    },
+    "gl": {
+      "name": "GL",
+      "iso": "gl",
+      "wins": 1
+    },
+    "au": {
+      "name": "AU",
+      "iso": "au",
+      "wins": 1
+    },
+    "sk": {
+      "name": "SK",
+      "iso": "sk",
+      "wins": 1
+    },
+    "eh": {
+      "name": "EH",
+      "iso": "eh",
+      "wins": 1
+    },
+    "gh": {
+      "name": "GH",
+      "iso": "gh",
+      "wins": 1
+    },
+    "ne": {
+      "name": "NE",
+      "iso": "ne",
+      "wins": 1
+    },
+    "nz": {
+      "name": "NZ",
+      "iso": "nz",
+      "wins": 1
+    },
+    "nl": {
+      "name": "NL",
+      "iso": "nl",
+      "wins": 1
+    }
+  }
+}
